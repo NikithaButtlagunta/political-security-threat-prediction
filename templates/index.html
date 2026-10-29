@@ -1,0 +1,68 @@
+Political Text Sentiment Analysis
+Compare TF-IDF supervised classifiers on the same held-out test split.
+
+{% if username %}
+Signed in as {{ username }}
+Sign out
+{% endif %}
+Important: Sentiment is not proof of intent or a real-world threat. Use this prototype for research and evaluation only.
+{% with messages = get_flashed_messages(with_categories=true) %} {% if messages %} {% for category, message in messages %}
+{{ message }}
+{% endfor %} {% endif %} {% endwith %}
+01
+Train and compare models
+Upload a labelled CSV file. All three classifiers use the same train/test split.
+
+Dataset (CSV, up to 10 MB) No file chosen
+Text column name
+e.g. tweet
+Label column name
+e.g. sentiment
+Models compared: Decision Tree, Naive Bayes, and SVM. All three use the same train/test split. The app selects the best model by macro F1-score, using accuracy as a tie-breaker.
+
+Train and compare all models
+Enter the exact column headers from your CSV. At least 10 labelled rows and two classes are required.
+
+{% if trained %}
+02
+Model comparison
+All models were evaluated on the same held-out test examples.
+
+{% for row in comparison %} {% endfor %}
+Model	Accuracy	Macro F1	Weighted F1
+{{ row.model_name }}{% if row.model_name == result.model_name %} (Selected){% endif %}	{{ "%.2f"|format(row.accuracy_percent) }}%	{{ "%.2f"|format(row.macro_f1_percent) }}%	{{ "%.2f"|format(row.weighted_f1_percent) }}%
+The selected model is the one with the highest macro F1-score, which gives each class equal weight. Results may vary with a different dataset or split.
+
+03
+Selected model evaluation
+{{ result.model_name }} · held-out test split
+
+Test accuracy{{ "%.1f"|format(result.accuracy * 100) }}%
+Rows used{{ result.rows }}
+Test examples{{ result.test_rows }}
+Accuracy reflects only this split and dataset. It is not a guarantee of future performance.
+
+Per-class metrics
+{% for label, row in result.report.items() %}{% endfor %}
+Class	Precision	Recall	F1	Support
+{{ label }}	{{ row.precision }}	{{ row.recall }}	{{ row.f1 }}	{{ row.support }}
+Confusion matrix
+Rows are actual labels; columns are predicted labels. Label order: {{ result.labels|join(", ") }}.
+
+{% for row in result.confusion_matrix %}{% for cell in row %}{% endfor %}{% endfor %}
+{{ cell }}
+04
+Analyze text
+Predict the dataset label using the selected model.
+
+Text to analyze 
+Paste a short political text sample…
+ Analyze text
+{% if result.prediction %}
+<div class="prediction">
+  <span>Predicted dataset label</span>
+  <strong>{{ result.prediction.label }}</strong>
+  <p>Model used: {{ result.prediction.model_name }}</p>
+  <p>Analyzed text: {{ result.prediction.text }}</p>
+</div>
+{% endif %}

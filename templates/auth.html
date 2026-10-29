@@ -1,0 +1,113 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Account Access | Political Text Analysis</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    .auth-card { width: 100%; max-width: 430px; margin: 24px auto; }
+    .auth-card .panel { padding: 30px; }
+    .auth-card h1 { font-size: 27px; margin-bottom: 8px; }
+    .auth-card .subtitle { margin-bottom: 24px; }
+    .auth-card label { display: block; margin: 15px 0 7px; }
+    .auth-card input { width: 100%; box-sizing: border-box; }
+    .auth-card button { width: 100%; margin-top: 22px; }
+    .auth-tabs { display: flex; gap: 10px; margin-bottom: 22px; }
+    .auth-tabs button { margin: 0; }
+    .auth-tabs button.active { font-weight: bold; }
+    .auth-foot { text-align: center; margin-top: 20px; }
+    .auth-card [hidden] { display: none !important; }
+    .brand { font-size: 13px; letter-spacing: 1.5px; margin-bottom: 12px; }
+    .error { color: #b42318; }
+  </style>
+</head>
+<body>
+  <main class="auth-card">
+    <section class="panel">
+      <div class="brand">POLITICAL TEXT ANALYSIS</div>
+      <h1 id="formTitle">Welcome back</h1>
+      <p class="subtitle" id="formSubtitle">Sign in to access your research dashboard.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}" role="alert">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="auth-tabs">
+        <button type="button" id="signInTab" class="active"
+                onclick="showForm('login')">Sign In</button>
+        <button type="button" id="registerTab"
+                onclick="showForm('register')">Create Account</button>
+      </div>
+
+      <form id="loginForm" method="post" action="{{ url_for('login') }}">
+        <label for="loginUsername">Username</label>
+        <input id="loginUsername" name="username" autocomplete="username"
+               placeholder="Enter your username" required>
+
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" name="password" type="password"
+               autocomplete="current-password" placeholder="Enter your password" required>
+
+        <button type="submit">Sign In</button>
+      </form>
+
+      <form id="registerForm" method="post" action="{{ url_for('register') }}" hidden>
+        <label for="registerUsername">Username</label>
+        <input id="registerUsername" name="username" autocomplete="username"
+               minlength="3" maxlength="40" placeholder="Choose a username" required>
+
+        <label for="registerEmail">Email Address</label>
+        <input id="registerEmail" name="email" type="email" autocomplete="email"
+               placeholder="you@example.com" required>
+
+        <label for="registerPassword">Password</label>
+        <input id="registerPassword" name="password" type="password"
+               autocomplete="new-password" minlength="8"
+               placeholder="At least 8 characters" required>
+
+        <label for="confirmPassword">Confirm Password</label>
+        <input id="confirmPassword" name="confirm_password" type="password"
+               autocomplete="new-password" minlength="8"
+               placeholder="Enter your password again" required>
+
+        <button type="submit">Create Account</button>
+      </form>
+
+      <p class="auth-foot">Secure access to your research workspace.</p>
+    </section>
+  </main>
+
+  <script>
+    function showForm(mode) {
+      const registering = mode === 'register';
+      document.getElementById('loginForm').hidden = registering;
+      document.getElementById('registerForm').hidden = !registering;
+      document.getElementById('signInTab').classList.toggle('active', !registering);
+      document.getElementById('registerTab').classList.toggle('active', registering);
+      document.getElementById('formTitle').textContent =
+        registering ? 'Create your account' : 'Welcome back';
+      document.getElementById('formSubtitle').textContent =
+        registering
+          ? 'Register to access your research dashboard.'
+          : 'Sign in to access your research dashboard.';
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', function(event) {
+      const password = document.getElementById('registerPassword').value;
+      const confirmation = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmation) {
+        event.preventDefault();
+        alert('Passwords do not match. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>
