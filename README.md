@@ -1,86 +1,191 @@
-# Political Security Threat Prediction Framework
+# Political Text Sentiment Analysis
 
-A hybrid lexicon-based and machine learning framework designed to predict political security threats in cyberspace by mining sentiments from online news platforms and social media.
+A machine learning-based web application that analyzes political text and predicts its sentiment using Natural Language Processing (NLP). The application compares multiple machine learning classifiers, evaluates their performance, and automatically selects the best-performing model.
 
-## 📌 Project Overview
-Monitoring online sentiments and public opinions is critical for detecting excessive emotional triggers that can lead to threats against national security. This project proposes a comprehensive framework that combines a lexicon-based sentiment analysis approach with machine learning classifiers to achieve optimal accuracy in threat detection.
+## Project Overview
 
-* **Academic Level:** Major Project submitted in partial fulfillment of the Bachelor of Technology (B.Tech) in Computer Science - Internet of Things.
-* **Institution:** Geethanjali College of Engineering and Technology (UGC Autonomous).
-* **Guided By:** Ms. B. Nalini (Associate Professor).
-* **Developed By:** B. Nikitha, S. Suhas, A. Sanjana (Batch of 2024).
+Political discussions across online platforms contain different opinions, viewpoints, and expressions. This project uses NLP and machine learning techniques to analyze political text and classify its sentiment based on a labeled dataset.
 
----
+Users can register and log in, upload a CSV dataset, train multiple machine learning models, compare their performance, and enter new political text to receive sentiment predictions.
 
-## 🛠️ System Requirements & Tech Stack
+## Features
 
-### Software Requirements
-* **Primary Language:** Python
-* **Environment Management:** Anaconda
-* **IDE/Development Environment:** Jupyter Notebook
-* **Web Framework:** Flask (Python)
-* **Database:** SQLite3
-* **Front-End Stack:** HTML5, CSS3, JavaScript, Bootstrap 4
+- User registration and login authentication
+- CSV dataset upload and validation
+- Text preprocessing using TF-IDF vectorization
+- Training and comparison of multiple machine learning classifiers
+- Automatic model selection based on macro F1-score, with accuracy as a tie-breaker
+- Model evaluation using accuracy, precision, recall, and F1-score
+- Classification reports and confusion matrices
+- Interactive sentiment prediction for new text
+- Input validation and error handling
 
-### Hardware Requirements (Minimum Baseline)
-* **Operating System:** Windows Only
-* **Processor:** Intel Core i5 and above
-* **RAM:** 8 GB or greater
-* **Storage Space:** 25 GB available on local disk
+## Technologies Used
 
----
+| Technology | Purpose |
+|---|---|
+| Python | Core programming language |
+| Flask | Web application framework |
+| Pandas | Dataset processing and manipulation |
+| NumPy | Numerical operations |
+| Scikit-learn | Machine learning algorithms and evaluation |
+| TF-IDF | Text feature extraction |
+| SQLite | User account database |
+| HTML | Web page structure |
+| CSS | User interface styling |
 
-## ⚙️ Core Architecture & Modules
+## Machine Learning Models
 
-The system breaks down the prediction pipeline into the following systematic functional modules:
-1. **Data Loading:** Imports text datasets (such as the Kaggle Dataset of Indian Politics Tweets and Reactions).
-2. **Data Preprocessing & NLP:** Tokenizes sentences, cleans text features, applies stop-word filters, and runs feature extractions (Unigrams, POS Tagging, score-based lexicon features).
-3. **Data Splitting:** Dynamically partitions the vector spaces into training and evaluation sets.
-4. **Model Generation & Ensemble Execution:** Evaluates single models against state-of-the-art stacking methods:
-   * Naive Bayes
-   * Support Vector Machine (SVM)
-   * Decision Tree
-   * Voting Classifier (AdaBoost + Random Forest)
-   * Stacking Classifier *(Achieving over 90% accuracy)*
-5. **Web Portal Authentication:** Provides multi-user capability via Secure User Registration and Sign-In pages.
-6. **Prediction Dashboard:** Interactive UI utilizing Flask routing where users input text blocks to produce live security polarity outputs.
+The application compares three machine learning algorithms:
 
----
+1. **Support Vector Machine (SVM)** – LinearSVC classifier
+2. **Decision Tree Classifier**
+3. **Multinomial Naive Bayes**
 
-## 🚀 Installation & Local Deployment Guide
+The dataset is divided into training and testing sets. All three classifiers are evaluated using the same held-out test split to ensure a consistent comparison.
 
-Follow these steps to deploy and test the application on your local machine:
+The application automatically selects the model with the highest macro F1-score. Accuracy is used as a tie-breaker.
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/political-security-threat-prediction.git
-   cd political-security-threat-prediction
-   ```
+## Model Comparison Results
 
-2. **Set Up Python Environment**
-   Open your Anaconda Prompt and create a fresh virtual environment:
-   ```bash
-   conda create -n security-env python=3.9
-   conda activate security-env
-   ```
+The following results were obtained during one of the project test runs:
 
-3. **Install Dependencies**
-   Install the required frameworks and machine learning packages:
-   ```bash
-   pip install flask pandas numpy scikit-learn nltk workspace
-   ```
+| Model | Accuracy | Macro F1 | Weighted F1 |
+|---|---:|---:|---:|
+| Support Vector Machine (SVM) | 85.65% | 85.25% | 85.65% |
+| Decision Tree | 71.55% | 70.99% | 71.75% |
+| Multinomial Naive Bayes | 70.49% | 68.18% | 69.54% |
 
-4. **Initialize Natural Language Corpus**
-   Open a Python shell within your terminal and download the required NLTK tokenizers:
-   ```python
-   import nltk
-   nltk.download('punkt')
-   nltk.download('averaged_perceptron_tagger')
-   ```
+Based on these evaluation results, SVM was automatically selected for this dataset.
 
-5. **Launch the Application**
-   Execute your primary server file:
-   ```bash
-   python app.py
-   ```
-   Open your preferred web browser and navigate to `http://127.0.0.1:5000/`.
+### Model Comparison Screenshot
+
+![Political Text Sentiment Analysis - Model Comparison](screenshots/model-comparison.png)
+
+### Selected Model Evaluation
+
+- **Selected Model:** SVM
+- **Test Accuracy:** 85.7%
+- **Rows Used:** 69,409
+- **Test Examples:** 13,882
+
+*Note: These results are specific to the dataset and test split used in this run. Model performance may vary with different datasets.*
+
+## Project Structure
+
+```text
+Political_Security_Project/
+│
+├── app.py
+├── sentiment_model.py
+├── requirements.txt
+├── README.md
+├── .gitignore
+│
+├── users.db
+│
+├── data/
+│   └── .gitkeep
+│
+├── static/
+│   └── style.css
+│
+├── templates/
+│   ├── auth.html
+│   └── index.html
+│
+└── screenshots/
+    └── model-comparison.png
+```
+
+## Installation and Setup
+
+Follow these steps to run the project locally.
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/NikithaButtlagunta/political-security-threat-prediction.git
+```
+
+### 2. Navigate to the Project Directory
+
+```bash
+cd political-security-threat-prediction
+```
+
+### 3. Create a Virtual Environment
+
+```bash
+python -m venv .venv
+```
+
+### 4. Activate the Virtual Environment
+
+For Windows PowerShell:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+### 5. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 6. Run the Application
+
+```bash
+python app.py
+```
+
+### 7. Open the Application
+
+Open your browser and visit:
+
+```text
+http://127.0.0.1:5000
+```
+
+## How to Use the Application
+
+1. Register a new account or log in.
+2. Upload a labeled CSV dataset.
+3. Select the appropriate text and sentiment-label columns.
+4. Train the machine learning models.
+5. Compare the performance of the three classifiers.
+6. Review the selected model's evaluation metrics and confusion matrix.
+7. Enter political text into the prediction section.
+8. View the predicted sentiment.
+
+## Evaluation Metrics
+
+The application uses the following metrics to evaluate model performance:
+
+- **Accuracy:** Measures the proportion of correctly classified test examples.
+- **Precision:** Measures how many predicted class labels were correct.
+- **Recall:** Measures how many actual class examples were correctly identified.
+- **Macro F1-score:** Calculates the average F1-score across classes, treating each class equally.
+- **Weighted F1-score:** Calculates the average F1-score while accounting for class support.
+- **Confusion Matrix:** Shows correct and incorrect predictions for each class.
+
+## Future Improvements
+
+- Experiment with advanced NLP models such as BERT.
+- Integrate larger and more diverse political datasets.
+- Implement hyperparameter tuning to improve model performance.
+- Add persistent storage for trained machine learning models.
+- Improve model evaluation and visualization.
+- Deploy the application to a cloud platform.
+
+## Important Note
+
+This project is intended for educational and research purposes. Sentiment analysis identifies the tone expressed in text; it does not establish factual accuracy, political intent, or whether an individual poses a real-world security threat.
+
+## Author
+
+**Nikitha Buttlagunta**
+
+- GitHub: [NikithaButtlagunta](https://github.com/NikithaButtlagunta)
+- Project Repository: [Political Text Sentiment Analysis](https://github.com/NikithaButtlagunta/political-security-threat-prediction)
