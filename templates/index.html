@@ -1,68 +1,464 @@
-Political Text Sentiment Analysis
-Compare TF-IDF supervised classifiers on the same held-out test split.
 
-{% if username %}
-Signed in as {{ username }}
-Sign out
-{% endif %}
-Important: Sentiment is not proof of intent or a real-world threat. Use this prototype for research and evaluation only.
-{% with messages = get_flashed_messages(with_categories=true) %} {% if messages %} {% for category, message in messages %}
-{{ message }}
-{% endfor %} {% endif %} {% endwith %}
-01
-Train and compare models
-Upload a labelled CSV file. All three classifiers use the same train/test split.
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-Dataset (CSV, up to 10 MB) No file chosen
-Text column name
-e.g. tweet
-Label column name
-e.g. sentiment
-Models compared: Decision Tree, Naive Bayes, and SVM. All three use the same train/test split. The app selects the best model by macro F1-score, using accuracy as a tie-breaker.
+  <title>Political Text Sentiment Analysis</title>
 
-Train and compare all models
-Enter the exact column headers from your CSV. At least 10 labelled rows and two classes are required.
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}">
+</head>
 
-{% if trained %}
-02
-Model comparison
-All models were evaluated on the same held-out test examples.
+<body>
 
-{% for row in comparison %} {% endfor %}
-Model	Accuracy	Macro F1	Weighted F1
-{{ row.model_name }}{% if row.model_name == result.model_name %} (Selected){% endif %}	{{ "%.2f"|format(row.accuracy_percent) }}%	{{ "%.2f"|format(row.macro_f1_percent) }}%	{{ "%.2f"|format(row.weighted_f1_percent) }}%
-The selected model is the one with the highest macro F1-score, which gives each class equal weight. Results may vary with a different dataset or split.
+<header class="hero">
+  <div class="eyebrow">POLITICAL TEXT ANALYSIS</div>
 
-03
-Selected model evaluation
-{{ result.model_name }} · held-out test split
+  <h1>Political Text Sentiment Analysis</h1>
 
-Test accuracy{{ "%.1f"|format(result.accuracy * 100) }}%
-Rows used{{ result.rows }}
-Test examples{{ result.test_rows }}
-Accuracy reflects only this split and dataset. It is not a guarantee of future performance.
+  <p>
+    Train, compare, and evaluate machine learning models
+    on labelled political text data.
+  </p>
+</header>
 
-Per-class metrics
-{% for label, row in result.report.items() %}{% endfor %}
-Class	Precision	Recall	F1	Support
-{{ label }}	{{ row.precision }}	{{ row.recall }}	{{ row.f1 }}	{{ row.support }}
-Confusion matrix
-Rows are actual labels; columns are predicted labels. Label order: {{ result.labels|join(", ") }}.
+<main>
 
-{% for row in result.confusion_matrix %}{% for cell in row %}{% endfor %}{% endfor %}
-{{ cell }}
-04
-Analyze text
-Predict the dataset label using the selected model.
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
 
-Text to analyze 
-Paste a short political text sample…
- Analyze text
-{% if result.prediction %}
-<div class="prediction">
-  <span>Predicted dataset label</span>
-  <strong>{{ result.prediction.label }}</strong>
-  <p>Model used: {{ result.prediction.model_name }}</p>
-  <p>Analyzed text: {{ result.prediction.text }}</p>
-</div>
-{% endif %}
+    <p>Signed in as <strong>{{ username }}</strong></p>
+
+    <form method="post" action="{{ url_for('logout') }}">
+      <button type="submit">Sign Out</button>
+    </form>
+
+  </div>
+
+  <div class="notice">
+    <strong>Important:</strong>
+    Sentiment classification is not proof of intent or a real-world threat.
+    Use this prototype for research and evaluation only.
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+
+  <!-- SECTION 01: DATASET AND MODEL SELECTION -->
+
+  <section class="panel">
+
+    <div class="section-heading">
+
+      <span class="step">01</span>
+
+      <div>
+        <h2>Upload Dataset and Select Model</h2>
+
+        <p>
+          Upload a labelled CSV dataset and choose
+          the machine learning model you want to use.
+        </p>
+      </div>
+
+    </div>
+
+    <form method="post"
+          action="{{ url_for('train') }}"
+          enctype="multipart/form-data">
+
+      <label for="dataset">
+        Dataset (CSV, maximum 10 MB)
+      </label>
+
+      <input
+        type="file"
+        id="dataset"
+        name="dataset"
+        accept=".csv"
+        required
+      >
+
+      <div class="two-col">
+
+        <div>
+          <label for="text_column">
+            Text column name
+          </label>
+
+          <input
+            id="text_column"
+            name="text_column"
+            placeholder="e.g. tweet"
+            required
+          >
+        </div>
+
+        <div>
+          <label for="label_column">
+            Label column name
+          </label>
+
+          <input
+            id="label_column"
+            name="label_column"
+            placeholder="e.g. sentiment"
+            required
+          >
+        </div>
+
+      </div>
+
+
+      <!-- MODEL SELECTION -->
+
+      <label for="model_name">
+        Choose Machine Learning Model
+      </label>
+
+      <select id="model_name" name="model_name" required>
+
+        <option value="Decision Tree"
+          {% if session.get('selected_model') == 'Decision Tree' %}
+            selected
+          {% endif %}>
+          Decision Tree
+        </option>
+
+        <option value="Naive Bayes"
+          {% if session.get('selected_model') == 'Naive Bayes' %}
+            selected
+          {% endif %}>
+          Naive Bayes
+        </option>
+
+        <option value="SVM"
+          {% if session.get('selected_model', 'SVM') == 'SVM' %}
+            selected
+          {% endif %}>
+          Support Vector Machine (SVM)
+        </option>
+
+      </select>
+
+      <p class="hint">
+        All three models will be trained and compared using
+        the same train/test split. Your selected model will
+        be used for the final evaluation and predictions.
+      </p>
+
+      <button type="submit">
+        Train and Compare Models
+      </button>
+
+    </form>
+
+  </section>
+
+
+  {% if trained and result %}
+
+
+  <!-- SECTION 02: MODEL COMPARISON -->
+
+  <section class="panel">
+
+    <div class="section-heading">
+
+      <span class="step">02</span>
+
+      <div>
+        <h2>Model Comparison</h2>
+
+        <p>
+          All classifiers were evaluated using the
+          same held-out test split.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Accuracy</th>
+            <th>Macro F1</th>
+            <th>Weighted F1</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          {% for row in comparison %}
+
+          <tr>
+
+            <td>
+              <strong>{{ row.model_name }}</strong>
+
+              {% if row.model_name == result.model_name %}
+                <span>(Selected)</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {{ "%.2f"|format(row.accuracy_percent) }}%
+            </td>
+
+            <td>
+              {{ "%.2f"|format(row.macro_f1_percent) }}%
+            </td>
+
+            <td>
+              {{ "%.2f"|format(row.weighted_f1_percent) }}%
+            </td>
+
+          </tr>
+
+          {% endfor %}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <p class="hint">
+      Your selected model is used for the evaluation
+      and text prediction sections below.
+    </p>
+
+  </section>
+
+
+  <!-- SECTION 03: SELECTED MODEL EVALUATION -->
+
+  <section class="panel">
+
+    <div class="section-heading">
+
+      <span class="step">03</span>
+
+      <div>
+
+        <h2>Selected Model Evaluation</h2>
+
+        <p>
+          {{ result.model_name }} · Held-out test split
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="metrics">
+
+      <div class="metric">
+        <span>Test Accuracy</span>
+
+        <strong>
+          {{ "%.1f"|format(result.accuracy * 100) }}%
+        </strong>
+      </div>
+
+      <div class="metric">
+        <span>Rows Used</span>
+
+        <strong>{{ result.rows }}</strong>
+      </div>
+
+      <div class="metric">
+        <span>Test Examples</span>
+
+        <strong>{{ result.test_rows }}</strong>
+      </div>
+
+    </div>
+
+
+    <h3>Per-Class Metrics</h3>
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Class</th>
+            <th>Precision</th>
+            <th>Recall</th>
+            <th>F1 Score</th>
+            <th>Support</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          {% for label, row in result.report.items() %}
+
+          <tr>
+            <td>{{ label }}</td>
+            <td>{{ row.precision }}</td>
+            <td>{{ row.recall }}</td>
+            <td>{{ row.f1 }}</td>
+            <td>{{ row.support }}</td>
+          </tr>
+
+          {% endfor %}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <h3>Confusion Matrix</h3>
+
+    <p class="hint">
+      Rows represent actual labels; columns represent predicted labels.
+    </p>
+
+    <p class="hint">
+      Label order: {{ result.labels|join(", ") }}
+    </p>
+
+    <div class="table-wrap">
+
+      <table>
+
+        <tbody>
+
+          {% for row in result.confusion_matrix %}
+
+          <tr>
+
+            {% for cell in row %}
+
+            <td>{{ cell }}</td>
+
+            {% endfor %}
+
+          </tr>
+
+          {% endfor %}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+
+  <!-- SECTION 04: TEXT PREDICTION -->
+
+  <section class="panel">
+
+    <div class="section-heading">
+
+      <span class="step">04</span>
+
+      <div>
+
+        <h2>Analyze Political Text</h2>
+
+        <p>
+          Predict the dataset label using your selected model.
+        </p>
+
+      </div>
+
+    </div>
+
+    <form method="post" action="{{ url_for('predict') }}">
+
+      <label for="text">
+        Text to Analyze
+      </label>
+
+      <textarea
+        id="text"
+        name="text"
+        rows="5"
+        maxlength="5000"
+        placeholder="Paste a short political text sample..."
+        required
+      ></textarea>
+
+      <p class="hint">
+        Maximum 5,000 characters.
+      </p>
+
+      <button type="submit">
+        Analyze Text
+      </button>
+
+    </form>
+
+
+    {% if result.prediction %}
+
+    <div class="prediction">
+
+      <span>Predicted Dataset Label</span>
+
+      <strong>
+        {{ result.prediction.label }}
+      </strong>
+
+      <p>
+        Model used: {{ result.prediction.model_name }}
+      </p>
+
+      <p>
+        Analyzed text: {{ result.prediction.text }}
+      </p>
+
+    </div>
+
+    {% endif %}
+
+  </section>
+
+
+  {% else %}
+
+  <section class="panel">
+
+    <h2>Your Dashboard Is Ready</h2>
+
+    <p>
+      Upload a labelled CSV dataset, select your preferred
+      machine learning model, and train the classifiers
+      to view their comparison and evaluation metrics.
+    </p>
+
+  </section>
+
+  {% endif %}
+
+
+  <footer>
+    Political Text Sentiment Analysis · Machine Learning Research Prototype
+  </footer>
+
+</main>
+
+</body>
+</html>
